@@ -15,7 +15,6 @@ human input.
 I became interested in solving the Rubik's cube after seeing it being solved by a robot hand created by Open AI
 (youtu.be/x4O8pojMF0w).
 
-
 Eventually, I hope to find work as a Python developer. Previously, I programmed almost exclusively in PowerBuilder PowerScript (also an incredibly efficient and expressive language) and SQL. I developed and marketed a windows
 based case management and reporting system that has come to the end of its usage after more than 20 years.
 
@@ -42,7 +41,7 @@ OVERVIEW: There are 4 primary classes in this program: cube(), render(), play(),
 """
 
 
-# Version 5   11/6/19
+# Version 5   11/8/19
 #     * significant refactor to classes that isolate the cube object, and allow independent and potentially
 #       interchangeable processes for input, output, and solving algorithm
 #     * abstracted cube class and variables to eventually use inheritance to support different cube types (eg. 3x3, 4x4)
