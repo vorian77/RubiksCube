@@ -1,3 +1,12 @@
+# RubikCube.py
+
+# Simple Rubik's Cube solver developed by Phyllip Hall to learn
+# and test understanding of Python
+
+# Version 1   10/30/19
+# initializes 6-sided cube, draws single side specified by user via command line
+
+
 def init_cube () :
 
     def init_square (color, side, row, column) :
