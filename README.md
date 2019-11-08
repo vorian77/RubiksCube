@@ -1,0 +1,2 @@
+# RubiksCube
+Python practice project
