@@ -31,7 +31,7 @@ OVERVIEW: There are 4 primary classes in this program: cube(), render(), play(),
 - solve() executes a multiphase algorithm that solves the cube
 """
 
-# Version 6
+# Version 6   11/11/19
 #   * calculates size of window based configuration of cube
 #   * fixed bug in left and right column moves
 #   * added find cube method for each cube type - center, edge, corner
@@ -86,19 +86,21 @@ class cube:
         self.squares_reset = {}
         self.squares_buffer = {}
 
-        self.base_slice_commands = []
-        self.global_turn_commands = (['tl', 'left'], ['tr', 'right'], ['tu', 'up'], ['td', 'down'])
-        self.global_special_commands = (['sc', 'scramble'], ['re', 'reset'], ['q', 'quit'])
-
          # 3x3 cube attributes (eventually should be instance attributes in inherited class of cube)
         self.elements = 3
         self.colors = ('orange', 'green', 'red', 'white', 'blue', 'yellow')
 
         # slice commands for 3x3 cube
-        self.base_slice_commands = (
-            ['l', 'left'],  ['m', 'middle'],     ['r', 'right'],
-            ['u', 'up'],    ['e', 'equatorial'], ['d', 'down'],
-            ['f', 'front'], ['s', 'standing'],   ['b', 'back'])
+        self.commands_base = (
+            ['l', 'Left'], ['li', 'Left Inverted'],
+            ['m', 'Middle'], ['mi', 'Middle Inverted'],
+            ['r', 'Right'], ['ri', 'Right Inverted'],
+            ['u', 'Up'], ['ui', 'Up Inverted'],
+            ['e', 'Equatorial'], ['ei', 'Equatorial Inverted'],
+            ['d', 'Down'], ['di', 'Down Inverted'],
+            ['f', 'Front'], ['fi', 'Front Inverted'],
+            ['s', 'Standing'], ['si', 'Standing Inverted'],
+            ['b', 'Back'], ['bi', 'Back Inverted'])
 
         # initialize squares on cube sides
         i = -1
@@ -139,26 +141,14 @@ class cube:
         # some actions require to sets of moves - eg. a left turn requires the squares in the 0 column and left face
         # to be moved
 
-        # x and y axis slice moves
+        # row slice moves - new column positions same as old
         plan_row = ('fl', 'lb', 'br', 'rf')
 
-        def slice_x_inverted(squares, plan, col):
+        def slice_row_inverted(squares, plan, col):
             plan_inverted = invert_plan(plan)
-            slice_x(squares, plan_inverted, col)
+            slice_row(squares, plan_inverted, col)
 
-        def slice_y_inverted(squares, plan, col):
-            plan_inverted = invert_plan(plan)
-            slice_y(squares, plan_inverted, col)
-
-        def slice_x(squares, plan, col):
-            for change in plan:
-                for row in range(self.elements):
-                    key_source = change[0] + str(col) + str(row)
-                    key_target = change[1] + str(col) + str(row)
-                    add_change(squares, key_source, key_target)
-            accept_buffer(squares)
-
-        def slice_y(squares, plan, row):
+        def slice_row(squares, plan, row):
             for change in plan:
                 for col in range(self.elements):
                     key_source = change[0] + str(col) + str(row)
@@ -166,7 +156,7 @@ class cube:
                     add_change(squares, key_source, key_target)
             accept_buffer(squares)
 
-        # z axis slice moves
+        # coordinate slice moves - all 12 color swaps are defined
         plan_left = (
             ['f00', 'd00'], ['f01', 'd01'], ['f02', 'd02'],
             ['d00', 'b22'], ['d01', 'b21'], ['d02', 'b20'],
@@ -203,11 +193,29 @@ class cube:
             ['d02', 'r22'], ['d12', 'r21'], ['d22', 'r20'],
             ['r22', 'u20'], ['r21', 'u10'], ['r20', 'u00'])
 
-        def slice_z_inverted(squares, plan):
-            plan_inverted = invert_plan(plan)
-            slice_z(squares, plan_inverted)
+        plan_up = (
+            ['u00', 'l02'], ['u10', 'l01'], ['u20', 'l00'],
+            ['l00', 'd02'], ['l01', 'd12'], ['l02', 'd22'],
+            ['d02', 'r22'], ['d12', 'r21'], ['d22', 'r20'],
+            ['r22', 'u20'], ['r21', 'u10'], ['r20', 'u00'])
 
-        def slice_z(squares, plan):
+        plan_equitorial = (
+            ['u00', 'l02'], ['u10', 'l01'], ['u20', 'l00'],
+            ['l00', 'd02'], ['l01', 'd12'], ['l02', 'd22'],
+            ['d02', 'r22'], ['d12', 'r21'], ['d22', 'r20'],
+            ['r22', 'u20'], ['r21', 'u10'], ['r20', 'u00'])
+
+        plan_down = (
+            ['u00', 'l02'], ['u10', 'l01'], ['u20', 'l00'],
+            ['l00', 'd02'], ['l01', 'd12'], ['l02', 'd22'],
+            ['d02', 'r22'], ['d12', 'r21'], ['d22', 'r20'],
+            ['r22', 'u20'], ['r21', 'u10'], ['r20', 'u00'])
+
+        def slice_coordinates_inverted(squares, plan):
+            plan_inverted = invert_plan(plan)
+            slice_coordinates(squares, plan_inverted)
+
+        def slice_coordinates(squares, plan):
             for change in plan:
                 key_source = change[0]
                 key_target = change[1]
@@ -271,59 +279,58 @@ class cube:
 
         # rotate()
         self.squares_to_render.clear()
-        commands_so_far = []
 
         for command in commands.split():
             # slices
             if command == 'l':
-                slice_z(self.squares, plan_left)
+                slice_coordinates(self.squares, plan_left)
                 rotate_face(self.squares, plan_face, 'l')
             elif command == 'li':
-                slice_z_inverted(self.squares, plan_left)
+                slice_coordinates_inverted(self.squares, plan_left)
                 rotate_face_inverted(self.squares, plan_face, 'l')
             elif command == 'm':
-                slice_z(self.squares, plan_middle)
+                slice_coordinates(self.squares, plan_middle)
             elif command == 'mi':
-                slice_z_inverted(self.squares, plan_middle)
+                slice_coordinates_inverted(self.squares, plan_middle)
             elif command == 'r':
-                slice_z(self.squares, plan_right)
+                slice_coordinates(self.squares, plan_right)
                 rotate_face(self.squares, plan_face, 'r')
             elif command == 'ri':
-                slice_z_inverted(self.squares, plan_right)
+                slice_coordinates_inverted(self.squares, plan_right)
                 rotate_face_inverted(self.squares, plan_face, 'r')
 
             elif command == 'u':
-                slice_y(self.squares, plan_row, 0)
+                slice_row(self.squares, plan_row, 0)
                 rotate_face(self.squares, plan_face, 'u')
             elif command == 'ui':
-                slice_y_inverted(self.squares, plan_row, 0)
+                slice_row_inverted(self.squares, plan_row, 0)
                 rotate_face_inverted(self.squares, plan_face, 'u')
             elif command == 'e':
-                slice_y_inverted(self.squares, plan_row, 1)
+                slice_row_inverted(self.squares, plan_row, 1)
             elif command == 'ei':
-                slice_y(self.squares, plan_row, 1)
+                slice_row(self.squares, plan_row, 1)
             elif command == 'd':
-                slice_y_inverted(self.squares, plan_row, 2)
+                slice_row_inverted(self.squares, plan_row, 2)
                 rotate_face(self.squares, plan_face, 'd')
             elif command == 'di':
-                slice_y(self.squares, plan_row, 2)
+                slice_row(self.squares, plan_row, 2)
                 rotate_face_inverted(self.squares, plan_face, 'd')
 
             elif command == 'f':
-                slice_z(self.squares, plan_front)
+                slice_coordinates(self.squares, plan_front)
                 rotate_face(self.squares, plan_face, 'f')
             elif command == 'fi':
-                slice_z_inverted(self.squares, plan_front)
+                slice_coordinates_inverted(self.squares, plan_front)
                 rotate_face_inverted(self.squares, plan_face, 'f')
             elif command == 's':
-                slice_z(self.squares, plan_standing)
+                slice_coordinates(self.squares, plan_standing)
             elif command == 'si':
-                slice_z_inverted(self.squares, plan_standing)
+                slice_coordinates_inverted(self.squares, plan_standing)
             elif command == 'b':
-                slice_z(self.squares, plan_back)
+                slice_coordinates(self.squares, plan_back)
                 rotate_face(self.squares, plan_face, 'b')
             elif command == 'bi':
-                slice_z_inverted(self.squares, plan_back)
+                slice_coordinates_inverted(self.squares, plan_back)
                 rotate_face_inverted(self.squares, plan_face, 'b')
 
             # turns
@@ -347,16 +354,9 @@ class cube:
             else:
                 print('No case defined for command:', command, '\n')
 
-            commands_so_far.append(command)
-            if not self.cube_valid():
-                print('broken at:', commands_so_far)
-                break
-            else:
-                print('commands executed:', len(commands_so_far))
-
 
     ######### cube methods - find
-    def color_in_cublet(self, cublet, color):
+    def find_cubes_color(self, cublet, color):
         for key in cublet:
             if self.squares[key] == color:
                 return True
@@ -365,7 +365,7 @@ class cube:
     def find_cubes(self, cubelets, colors):
         for cublet in cubelets:
             for color in colors:
-                if not self.color_in_cublet(cublet, color):
+                if not self.find_cubes_color(cublet, color):
                     break
             else:
                 return cublet
@@ -401,24 +401,22 @@ class cube:
                 colors.append(self.squares[key])
             print(cublet, colors)
 
-    def cube_valid_type(self, cubelets):
-        for cubelet in cubelets:
-            colors = []
-            for key in cubelet:
-                color = self.squares[key]
-                if color in colors:
-                    print('Cube Invalid:', cubelet)
-                    return False
-                else:
-                    colors.append(color)
-        else:
-            return True
-
     def cube_valid(self):
-        if not self.cube_valid_type(self.edge_cubelets) : return False
-        if not self.cube_valid_type(self.corner_cubelets) : return False
+        def cube_valid_type(cubelets):
+            for cubelet in cubelets:
+                colors = []
+                for key in cubelet:
+                    color = self.squares[key]
+                    if color in colors:
+                        print('Cube Invalid:', cubelet)
+                        return False
+                    else:
+                        colors.append(color)
+                else:
+                    return True
+        if not cube_valid_type(self.edge_cubelets) : return False
+        if not cube_valid_type(self.corner_cubelets) : return False
         return True
-
 
 
     ######### cube methods - other
@@ -434,43 +432,35 @@ class cube:
     def get_render_que(self):
         return self.squares_to_render
 
-    def scramble(self, command_cnt):
-        master_commands_list = []
-        return_command_list = ''
+    def get_commands_display(self):
+        list = ''
+        for command in self.commands_base:
+            if list != '' : list += ', '
+            #list += command[0] + '(' + command[1] + ')'
+            list += command[0]
+        return list
 
-        # create list of base and inverted slice commands
-        for command in self.base_slice_commands:
-            master_commands_list.append(command[0])
-            master_commands_list.append(command[0] + 'i')
+    def get_commands_execute(self):
+        list = []
+        for command in self.commands_base:
+            list.append(command[0])
+        return list
 
-        for i in range(command_cnt):
-            idx = random.randint(0, len(master_commands_list) - 1)
-            if return_command_list != '': return_command_list += ' '
-            return_command_list += master_commands_list[idx]
+    def scramble(self, commands_cnt):
+        commands = self.get_commands_execute()
+        commands_list = ''
 
-        self.rotate(return_command_list)
-        return return_command_list
+        for i in range(commands_cnt):
+            idx = random.randint(0, len(commands) - 1)
+            if commands_list != '': commands_list += ' '
+            commands_list += commands[idx]
+
+        self.rotate(commands_list)
+        return commands_list
 
     def reset(self):
         self.squares = self.squares_reset.copy()
         self.squares_to_render = self.squares_reset.copy()
-
-    def help(self):
-        def get_command_list(commands):
-            list = ''
-            for command in commands:
-                if list != '' : list += ', '
-                list += command[0] + ' (' + command[1] + ')'
-
-            return list
-
-        # help
-        print('\nAvailable commands...')
-        print('Base Slices:', get_command_list(self.base_slice_commands))
-        print('Inverted Slices: add "i" to Base Slice commands, eg. "li"')
-        print('Turns:', get_command_list(self.global_turn_commands))
-        print('Other:', get_command_list(self.global_special_commands))
-        print('\n')
 
 
 class render:
@@ -605,8 +595,27 @@ class render:
 
 class play:
     def __init__(self, cube):
-        cube.help()
+        self.commands_list = cube.get_commands_display()
+        self.commands_turn = (['tl', 'left'], ['tr', 'right'], ['tu', 'up'], ['td', 'down'])
+        self.commands_other = (['sc', 'scramble'], ['re', 'reset'], ['v', 'valid'], ['q', 'quit'])
+
+        self.help()
         self.command_line(cube)
+
+    def help(self):
+        def get_command_list(commands):
+            list = ''
+            for command in commands:
+                if list != '': list += ', '
+                list += command[0] + ' (' + command[1] + ')'
+            return list
+
+        # help
+        print('\nAvailable commands...')
+        print('Slices:', self.commands_list)
+        print('Turns:', get_command_list(self.commands_turn))
+        print('Other:', get_command_list(self.commands_other))
+        print('\n')
 
     def command_line(self, cube):
         while True:
@@ -621,6 +630,8 @@ class play:
                 render.draw(cube)
             elif inp == 'q':
                 exit()
+            elif inp == 'v':
+                print('Cube Is Valid:', cube.cube_valid())
             else:
                 cube.rotate(inp)
                 render.draw(cube)
@@ -631,49 +642,4 @@ class play:
 
 cube = cube()
 render = render(cube)
-#play = play(cube)
-
-# dev - setup
-cube.scramble(100000)
-render.draw(cube)
-render.pause()
-
-#cube.scramble(1000)
-#render.draw(cube)
-
-command = []
-for i in range(1000):
-    print(i)
-    command.append(cube.scramble(1))
-#    render.draw(cube)
-
-    sqr = cube.find_center(['green'])
-    if len(sqr) != 1 :
-        render.draw(cube)
-        print('center broken by:', i, command)
-        render.pause()
-
-    sqr = cube.find_edge(['green', 'white'])
-    if len(sqr) != 2 :
-        render.draw(cube)
-        print('edge broken by:', i, command)
-        render.pause()
-
-    sqr = cube.find_corner(['green', 'white', 'red'])
-    if len(sqr) != 3 :
-        render.draw(cube)
-        print('corner broken by:', i, command)
-        render.pause()
-
-
-#cube.rotate('l ui')
-#render.draw(cube)
-
-while True:
-    cube.scramble(100)
-    render.draw(cube)
-    print('center - green', cube.find_center(['green']))
-    print('edge - green, white', cube.find_edge(['green', 'white']))
-    print('corner - green, white, red', cube.find_corner(['green', 'white', 'red']))
-    render.pause()
-
+play = play(cube)
