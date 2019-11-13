@@ -1,7 +1,7 @@
 # RubiksCube
 This project is a simulator and solver for the Rubik's cube puzzle that will be written in Python v3.8.
 
-It will utilize Rubik’s Cube move conventions defined on ruwix.com, and will use the solving algorithm defined on speedcube.com.au.
+It will utilize Rubik’s Cube move conventions defined on rubiksplace.com, and will use the solving algorithm defined on speedcube.com.au.
 
 The program will eventually be architected to allow for the solving of any sized, (square) Rubik’s style puzzle. The most popular 3x3 (6-sided/colored) cube will be implemented initially.
 
