@@ -90,7 +90,7 @@ OVERVIEW: There are 4 primary classes in this program: cube(), render(), play(),
 import random
 import typing
 import datetime
-from graphics import *
+from graphics1 import *
 
 
 ##########################################################################
@@ -734,7 +734,7 @@ def play(cube, render):
                 cube.reset()
                 render.draw(cube)
             elif inp == 'q':
-
+                exit()
             elif inp == 'v':
                 print('Cube Is Valid:', cube.cube_valid())
             elif inp == 't':
@@ -758,7 +758,7 @@ class Solve(object):
         self.log_squares_to_solve = tuple()
 
     def log_file_init(self):
-        self.fout = open('/Users/phyllip/Desktop/rubikscube_trace.txt', 'w')
+        self.fout = open('rubikscube_trace.txt', 'w')
         self.fout.write(str(datetime.datetime.now()) + '\n')
 
     def log_file_close(self):
