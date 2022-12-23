@@ -700,7 +700,7 @@ class Render:
 def play(cube, render):
     commands_list = cube.get_commands_display()
     COMMANDS_TURN = (('tl', 'left'), ('tr', 'right'), ('tu', 'up'), ('td', 'down'))
-    COMMANDS_OTHER = (('sc', 'scramble'), ('reset', 'reset'), ('so', 'solve'), ('restart', 'restart'), ('v', 'valid'), ('t', 'test'), ('q', 'quit'))
+    COMMANDS_OTHER = (('sc', 'scramble'), ('reset', 'reset'), ('so', 'solve'), ('restart', 'restart'), ('v', 'valid'), ('t', 'test'), ('q', 'quit'), ('h', 'help'))
 
     def help():
         def get_command_list(commands):
